@@ -135,7 +135,7 @@ export const useAuthStore = create<AuthState>()(
             password: password,
           });
 
-          const { success, token, errorMessage } = response.data;
+          const { success, token } = response.data;
 
           if (success && token) {
             // Set token in auth headers for subsequent requests
@@ -146,6 +146,7 @@ export const useAuthStore = create<AuthState>()(
           console.log(response.data);
 
           return response.data;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
           return {
             success: false,

@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
+import Image from "next/image";
 // import api from "@/lib/axios";
 // import axios from "axios";
 import { Button } from "@/components/ui/button";
@@ -83,7 +84,7 @@ export function LoginForm({
           <form onSubmit={handleSubmit(onSubmit)} className="p-6 md:p-8 bg">
             <div className="flex flex-col gap-6 ">
               <div className="flex items-center space-x-2">
-                <img src="/logo.png" alt="Logo" className="w-8 h-8 " />
+                <Image src="/logo.png" alt="Logo" width={32} height={32} />
                 <p className="font-semibold">
                   <span style={{ color: "#59c6d0" }}>AI</span>Support
                 </p>

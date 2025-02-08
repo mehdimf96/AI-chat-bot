@@ -1,11 +1,14 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "../stores/auth-store";
 // import OpenAI from "openai";
 // import api from "../../lib/axios";
+import { SendHorizontal } from "lucide-react";
+import Image from "next/image";
 
 import { useChat } from "ai/react";
+import Navbar from "../components/Navbar";
 
 export default function ChatPage() {
   const { messages, input, handleInputChange, handleSubmit } = useChat();
@@ -14,6 +17,7 @@ export default function ChatPage() {
   // const [message, setMessage] = useState("");
   // const [response, setResponse] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const verifyAuth = async () => {
@@ -24,6 +28,12 @@ export default function ChatPage() {
     };
     verifyAuth();
   }, [checkAuth, router]);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   // const handleSubmit = async (e: React.FormEvent) => {
   //   e.preventDefault();
@@ -56,18 +66,19 @@ export default function ChatPage() {
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <div className="w-80 bg-gray-50 border-r border-gray-200 flex flex-col bg-[url('/bg.png')] bg-cover bg-center">
+      <div className="hidden lg:flex w-80 bg-gray-50 border-r border-gray-200  flex-col bg-[url('/bg.png')] bg-cover bg-center">
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <img src="/logo.png" alt="Logo" className="w-8 h-8 " />
+              <Image src="/logo.png" alt="Logo" width={32} height={32} />
+
               <p className="font-semibold">
                 <span style={{ color: "#59c6d0" }}>AI</span>Support
               </p>
             </div>
-            <button className="px-3 py-1 bg-gray-900 text-white rounded-md text-sm">
+            {/* <button className="px-3 py-1 bg-gray-900 text-white rounded-md text-sm">
               + New Chat
-            </button>
+            </button> */}
           </div>
           <div className="mt-4">
             <input
@@ -89,7 +100,7 @@ export default function ChatPage() {
         </div>
 
         {/* User Profile */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 ">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gray-200 rounded-full" />
@@ -103,32 +114,70 @@ export default function ChatPage() {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Chat Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Message bubbles will go here */}
 
-          {messages.map((m) => (
-            <div
-              key={m.id}
-              className={`flex ${
-                m.role === "user" ? "justify-end" : "justify-start"
-              }`}
+      <div className="flex-1 flex flex-col">
+        {/* navbar */}
+        <Navbar />
+        {/* <div className="flex items-center justify-between p-4 ">
+          <div className=" flex items-center space-x-4">
+            <PanelRightOpen className="cursor-pointer" />
+            <div className="h-6 w-px bg-gray-300" />
+            <button
+              className="px-3 py-1 bg-gray-900 text-black rounded-md text-sm"
+              style={{ backgroundColor: "#59c6d0" }}
             >
+              + New Chat
+            </button>
+          </div>
+          <button className="px-3 py-1 bg-white text-white rounded-md text-sm">
+            + New Chat
+          </button>
+        </div> */}
+
+        {/* Chat Messages */}
+        <div className="flex-1 flex justify-center overflow-y-auto p-6 space-y-6">
+          {/* Message bubbles will go here */}
+          <div className="w-full max-w-[760px]">
+            {messages.map((m) => (
               <div
-                className={`whitespace-pre-wrap max-w-fit p-2 rounded-md ${
-                  m.role === "user" ? "bg-gray-100 ml-auto" : "bg-white"
+                key={m.id}
+                className={`flex ${
+                  m.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
-                {m.role === "user" ? "User: " : "AI: "} {m.content}
+                <div
+                  className={`whitespace-pre-wrap p-2  rounded-md ${
+                    m.role === "user"
+                      ? "bg-gray-200 ml-auto max-w-[70%]"
+                      : "bg-white max-w-fit"
+                  }`}
+                >
+                  {m.role === "user" ? (
+                    <span>{m.content}</span>
+                  ) : (
+                    <div className="flex items-start space-x-5">
+                      <Image
+                        src="/logo.png"
+                        alt="Logo"
+                        width={32}
+                        height={32}
+                      />
+                      <span>{m.content}</span>
+                    </div>
+                  )}{" "}
+                  {/* {m.content} */}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
         </div>
 
         {/* Message Input */}
-        <div className="border-t border-gray-200 p-4">
-          {/* <div className="relative">
+
+        <div className=" flex justify-center p-4 ">
+          <div className="w-full lg:max-w-[760px]">
+            {/* <div className="relative">
             <input
               type="text"
               value={message}
@@ -152,38 +201,56 @@ export default function ChatPage() {
             This chatbot can make mistakes. Check important info.
           </div> */}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex items-center space-x-2">
-              {/* <textarea
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!input.trim()) return;
+
+                setIsLoading(true); // Start loading
+                try {
+                  await handleSubmit(e); // Call the existing submit handler
+                } finally {
+                  setIsLoading(false); // Stop loading
+                }
+              }}
+              className="space-y-4"
+            >
+              <div className="flex items-center space-x-2">
+                {/* <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Type your message here..."
                 rows={4}
               /> */}
-              <input
-                className="flex-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
-                value={input}
-                placeholder="Say something..."
-                onChange={handleInputChange}
-              />
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="px-4 py-2  text-white rounded-md disabled:bg-gray-400"
-                style={{ backgroundColor: "#59c6d0" }}
-              >
-                {isLoading ? "Sending..." : "Send Message"}
-              </button>
-            </div>
-          </form>
-          {/* 
+                <input
+                  className="flex-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
+                  value={input}
+                  placeholder="Say something..."
+                  onChange={handleInputChange}
+                />
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="px-4 py-3  text-black rounded-md disabled:bg-gray-400"
+                  style={{ backgroundColor: "#59c6d0" }}
+                >
+                  {isLoading ? (
+                    "Sending..."
+                  ) : (
+                    <SendHorizontal className="inline-block" />
+                  )}
+                </button>
+              </div>
+            </form>
+            {/* 
           {Response && (
             <div className="mt-6 p-4 bg-gray-50 rounded-md">
               <h3 className="font-semibold mb-2">Response:</h3>
               <p className="whitespace-pre-wrap">{response}</p>
             </div>
           )} */}
+          </div>
         </div>
       </div>
     </div>
